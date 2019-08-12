@@ -3,12 +3,16 @@
 import os
 import time
 import tempfile
+from functools import wraps
+from contextlib import contextmanager
 
 
 def caught(f):
-    def _caught(args, **kwargs):
+
+    @wraps(f)
+    def _caught(*args, **kwargs):
         try:
-            f(args, **kwargs)
+            f(*args, **kwargs)
         except BaseException as e:
             print(e)
     return _caught
@@ -16,9 +20,10 @@ def caught(f):
 
 def log(state):
     def _log(f):
-        def __log(args, **kwargs):
+        @wraps(f)
+        def __log(*args, **kwargs):
             print('test', ':', state)
-            f(args, **kwargs)
+            f(*args, **kwargs)
         return __log
     return _log
 
@@ -49,6 +54,7 @@ class Test:
 
     @caught
     def execute(self):
+        print(self.__doc__)
         self.prep()
         self.run()
         self.clean_up()
@@ -58,6 +64,7 @@ class Test:
 
 
 class Test1(Test):
+    """ this is doc_sting for Test1 suite """
 
     def prep(self):
         super().prep()
@@ -74,6 +81,7 @@ class Test1(Test):
 
 
 class Test2(Test):
+    """ this is doc_sting for Test2 suite """
 
     path = None
 
@@ -93,5 +101,7 @@ class Test2(Test):
 
 if __name__ == '__main__':
 
-    for cls in (Test1, Test2,):
+    for cls in (Test1,
+                Test2,
+                ):
         cls().execute()
